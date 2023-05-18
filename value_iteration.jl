@@ -1,4 +1,11 @@
 using HDF5
+include("bellman.jl")
+
+#=
+(i) This code runs the value iteration algorithm.
+(ii) Data is loaded and stored  in a corresponding HDF5 file, generated in init_experiment.jl.
+(iii) Bellman operators are loaded from bellman.jl.
+=#
 
 #basic data for testing
 name = "exp_test.h5"
@@ -6,8 +13,11 @@ name = "exp_test.h5"
 #if value iteration was half-way completed, start at the latest iterate
 #must ensure experiment file has been initialized, however
 if isfile("data/"*name)
-    #open the file
+    #open the file, access base attributes
     file = h5open("data/"*name,"r")
+    method = read_attribute(file,"method")
+    scenario_code = read_attribute(file,"scenario_code")
+
     if "vfuncs" in keys(file)
         println("Initialized experiment located.")
         func_strings = keys(file["vfuncs"])
@@ -29,9 +39,21 @@ else
     error("Experiment not initialized.")
 end
 
+#choose which type of Bellman update to use, and identify relevant parameters
+if method == "exact"
+    bellman = bellman_test
+    parameters = h5read("data/"*name, "init")
+    delete!(parameters,"J_init")
+else
+    bellman = bellman_test
+    parameters = h5read("data/"*name, "init")
+    delete!(parameters,"J_init")
+end
+
+#begin value iteration
 for t=(t_min-1):-1:0
     #dummy version of Bellman update
-    J_new = J + ones((10,10,10,5))
+    J_new = bellman(J, parameters)
     global J = J_new
     
     println("Bellman Update complete.")

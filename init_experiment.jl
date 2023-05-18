@@ -1,5 +1,10 @@
 using HDF5
 
+#=
+(i) This code initializes an experiment in the form of an HDF5 file.
+(ii) These files are then used in value_iteration.jl.
+=#
+
 #define experiment name, scenario code, method
 name = "exp_test.h5"
 scenario_code = "water3x3"
@@ -37,3 +42,5 @@ attributes(file)["scenario_code"] = scenario_code
 attributes(file)["method"] = method
 
 close(file)
+
+println("Experiment "*name*" initialized.")
