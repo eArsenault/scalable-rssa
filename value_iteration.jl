@@ -41,7 +41,7 @@ end
 
 #choose which type of Bellman update to use, and identify relevant parameters
 if method == "exact"
-    bellman = bellman_test
+    bellman = bellman_exact
     parameters = h5read("data/"*name, "init")
     delete!(parameters,"J_init")
 else
@@ -53,7 +53,7 @@ end
 #begin value iteration
 for t=(t_min-1):-1:0
     #dummy version of Bellman update
-    J_new = bellman(J, parameters)
+    J_new = bellman(J, scenario_code, parameters)
     global J = J_new
     
     println("Bellman Update complete.")
