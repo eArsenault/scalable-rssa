@@ -1,4 +1,5 @@
 using Interpolations
+include("scenarios.jl")
 #=
 (i) This code contains the Bellman operators to be used in value_iteration.jl.
 (ii) All functions must have the same signature.
@@ -25,12 +26,14 @@ function bellman_exact(J, scenario_code, pars)
     
     #get the environment function
     #exp_code tells us whether the environment also returns the noise distribution (can make expectation faster)
-    #=
+    
     (environment, exp_code) = get_environment(scenario_code)
     if exp_code == 0
         itp = interpolate(X, J, Gridded(Linear()));
+    else
+        (wvals, pmf) = get_pmf(scenario_code)
     end
-    =#
+    
 
     #iterator for C
     inds_C = collect(Iterators.product([1:subdimC for i=1:dimC]...))
