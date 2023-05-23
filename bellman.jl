@@ -1,4 +1,4 @@
-using Interpolations
+using Interpolations, LinearAlgebra
 include("scenarios.jl")
 #=
 (i) This code contains the Bellman operators to be used in value_iteration.jl.
@@ -24,17 +24,18 @@ function bellman_exact(J, scenario_code, pars)
     X = [[collect(range(Xl[1,i], Xl[2,i], nJ[i])) for i=1:(dimS - 1)]; [collect(range(Zl[1], Zl[2], nJ[dimS]))]]
     C = [collect(range(Ul[1,i], Ul[2,i], subdimC)) for i=1:dimC] 
     
+    #generate a linear interpolator object on X using values in J
+    itp = interpolate(X, J, Gridded(Linear()));
+
     #get the environment function
-    #exp_code tells us whether the environment also returns the noise distribution (can make expectation faster)
-    
+    #exp_code tells us whether the environment also returns the noise distribution (to make expectation faster)
     (environment, exp_code) = get_environment(scenario_code)
-    if exp_code == 0
-        itp = interpolate(X, J, Gridded(Linear()));
+    if exp_code == 1
+        (w, pmf) = get_pmf(scenario_code)
     else
-        (wvals, pmf) = get_pmf(scenario_code)
+        (w, pmf) = nothing
     end
     
-
     #iterator for C
     inds_C = collect(Iterators.product([1:subdimC for i=1:dimC]...))
     
@@ -49,19 +50,25 @@ function bellman_exact(J, scenario_code, pars)
         for ind_C in inds_C
             u = [C[i][ind_C[i]] for i=1:dimC]
 
-            #=
-            #compute expected value
+            #compute expected value using...
             if exp_code == 0
-                #get samples, interpolate on J, take sample mean
-            else
-                #get samples + distribution, take inner product
+                #sample average!
+                xp = environment(x,u,w)
+                val = sum(map(v -> itp(v...), xp)) / length(xp)
+            elseif exp_code == 1
+                #inner product with pmf!
+                xp = environment(x,u,w)
+                val = dot(map(v -> itp(v...), xp), pmf)
+            else 
+                #test values!
+                val = 1
             end
-            =#
-            val = 1
+            
+            #keep a running minimum over C
             min_u = min(val, min_u)
         end
 
-        J[xc] = J[xc] + min_u #for now - this should return same value as the test
+        J[xc] = min_u
     end
 
     return J
