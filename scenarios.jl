@@ -10,6 +10,8 @@ function get_environment(scenario_code)
         return (environment_water3d, 1)
     elseif scenario_code == "water10x10"
         return (environment_water10d, 0)
+    else
+        return (environment_test, 0)
     end
 end
 
@@ -22,4 +24,8 @@ function get_pmf(scenario_code)
         #if no pmf exists, returns a variable with value==nothing
         return
     end
+end
+
+function environment_test(x, u, w=nothing, m=100)
+    return map(v -> x, 1:m)
 end

@@ -12,7 +12,6 @@ end
 
 #basic data for testing
 name = "exp_test.h5"
-println(h5read("data/exp_test.h5","progress"))
 
 #if value iteration was half-way completed, start at the latest iterate
 #must ensure experiment file has been initialized, however

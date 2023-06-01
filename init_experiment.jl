@@ -7,14 +7,18 @@ using HDF5
 
 #define experiment name, scenario code, method
 name = "exp_test.h5"
-scenario_code = "water3x3"
-method = "test"
+scenario_code = "test"
+method = "exact"
 kernel = "null" #if not using a kernel method, leave as "null" (empty valued attributes aren't supported)
 
 #(all dummy values for now)!!
 #define horizon N, size of C as integers
 N = 10
-size_C = 1000
+size_C = 10
+
+#sampling points for EVL
+n = 1000
+m = 100
 
 #define X, Z, and C ranges 
 #ensure upper limit on Z is maximum cost value
@@ -29,7 +33,7 @@ s_vals = collect(range(Zlim[1], Zlim[2], s_num + 1))
 
 #define initial value function
 #J_init should have dimension = dimX + 1
-J_init = zeros((10,10,10,5)) 
+J_init = 5.0 * ones((10,10,10,5)) 
 
 #open the file in write-mode allows us to overwrite if the file exists
 h5open("data/"*name, "w") do file
@@ -39,6 +43,8 @@ h5open("data/"*name, "w") do file
     g_init["Xlim"] = Xlim
     g_init["Ulim"] = Ulim
     g_init["Zlim"] = Zlim
+    g_init["n"] = n
+    g_init["m"] = m
 
     file["progress"] = "s1/J"*string(N)
     file["complete"] = "no"
