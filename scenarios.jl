@@ -5,13 +5,13 @@
 
 function get_environment(scenario_code)
     if scenario_code == "water3x3"
-        return (environment_water3d, 0)
-    elseif scenario_code == "water3x3_pmf"
         return (environment_water3d, 1)
+    elseif scenario_code == "water3x3_pmf"
+        return (environment_water3d, 0)
     elseif scenario_code == "water10x10"
-        return (environment_water10d, 0)
+        return (environment_water10d, 1)
     else
-        return (environment_test, 0)
+        return (environment_test, 1)
     end
 end
 
@@ -28,4 +28,25 @@ end
 
 function environment_test(x, u, w=nothing, m=100)
     return map(v -> x, 1:m)
+end
+
+#this ones a WIP
+function environment_3d(chi, u, w=[[1.0, 1.0, 1.0, 1.0, 1.0]], m=100)
+    #relevant parameters for dynamics, cost
+    D = [0 1 0.5; 0 0 0.5; 0 0 0]
+    r = [1; 1; 2]
+    B = [1 0 0 0 0.2; 0 1 0 0.5 0; 0 0 1 0.5 0.8]
+
+    #maximum cost in this config == 4.5
+    op = [5.0, 5.0, 5.0]
+    eps = [0.5, 0.5, 0.5]
+    xl = [7.0, 7.0, 7.0]
+
+    x, z = (chi[1:(end-1)], chi[end])
+    c = maximum([abs.(x - op) - eps; 0])
+    if m == 0
+        return map(v -> [min.(x + (D - I) * min.((r .* sqrt.(x) .* u), x) + (B * v), xl); max(z, c)], w)
+    else
+        return map(v -> [min.(x + (D - I) * min.((r .* sqrt.(x) .* u), x) + (B * v), xl); max(z, c)], rand(w, m))
+    end
 end
