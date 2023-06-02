@@ -1,10 +1,15 @@
-using Interpolations, LinearAlgebra
+using Interpolations, LinearAlgebra, LinearSolve
 include("scenarios.jl")
 #=
 (i) This code contains the Bellman operators to be used in value_iteration.jl.
 (ii) All functions must have the same signature.
 (iii) pars gives the setup for the data structures used, scenario_code defines the environment via scenarios.jl
 =#
+
+function kernel(x1, x2)
+    sgm = 1
+    return exp(-sum(abs.(x1 - x2).^2)/(2*sgm^2))
+end
 
 #used in value_iteration.jl for testing
 function bellman_test(J, scenario_code, pars)
@@ -17,6 +22,7 @@ function bellman_exact(J, scenario_code, pars)
     dimS = size(Xl)[2] + 1 #plus one for dimension Z
     dimC = size(Ul)[2]
     subdimC = round(Int, pars["size_C"] ^ (1/dimC)) #how many interpolants for each dimension of C
+    m = pars["m"]
 
     #generate a linear interpolator object on X using values in J
     nJ = size(J) #number of grid points along each dim
@@ -48,13 +54,13 @@ function bellman_exact(J, scenario_code, pars)
             u = [C[i][ind_C[i]] for i=1:dimC]
 
             #compute expected value using...
-            if exp_code == 0
+            if exp_code == 1
                 #sample average!
-                xp = environment(x,u,w)
+                xp = environment(x,u,w,m)
                 val = sum(map(v -> itp(v...), xp)) / length(xp)
-            elseif exp_code == 1
+            elseif exp_code == 0
                 #inner product with pmf!
-                xp = environment(x,u,w)
+                xp = environment(x,u,w,0)
                 val = dot(map(v -> itp(v...), xp), pmf)
             else 
                 #test values!
@@ -91,7 +97,7 @@ function bellman_approximate(J, scenario_code, pars)
     #get the environment function
     #exp_code tells us whether the environment also returns the noise distribution (to make expectation faster)
     (environment, exp_code) = get_environment(scenario_code)
-    if exp_code == 1
+    if exp_code == 0
         (w, pmf) = get_pmf(scenario_code)
     else
         (w, pmf) = (nothing, nothing)
@@ -135,8 +141,11 @@ function bellman_approximate(J, scenario_code, pars)
     end
 
     #solve the regression problem
-
-
+    lambda = 1/cbrt(n)
+    prob = LinearProblem(K + lambda * n * I, y)
+    sol = solve(prob, KrylovJL_CG())
+    beta = sol.u
+    
     #store data
 
 end
