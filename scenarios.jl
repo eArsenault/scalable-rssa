@@ -26,6 +26,16 @@ function get_pmf(scenario_code)
     end
 end
 
+function get_cost(scenario_code)
+    if scenario_code == "water3x3"
+        return cost_water3d
+    elseif scenario_code == "water10x10"
+        return cost_water10d
+    else
+        return cost_test
+    end
+end
+
 function environment_test(x, u, w=nothing, m=100)
     return map(v -> x, 1:m)
 end
@@ -38,15 +48,23 @@ function environment_3d(chi, u, w=[[1.0, 1.0, 1.0, 1.0, 1.0]], m=100)
     B = [1 0 0 0 0.2; 0 1 0 0.5 0; 0 0 1 0.5 0.8]
 
     #maximum cost in this config == 4.5
-    op = [5.0, 5.0, 5.0]
-    eps = [0.5, 0.5, 0.5]
     xl = [7.0, 7.0, 7.0]
 
     x, z = (chi[1:(end-1)], chi[end])
-    c = maximum([abs.(x - op) - eps; 0])
+    c = cost_water3d(x,u)
     if m == 0
         return map(v -> [min.(x + (D - I) * min.((r .* sqrt.(x) .* u), x) + (B * v), xl); max(z, c)], w)
     else
         return map(v -> [min.(x + (D - I) * min.((r .* sqrt.(x) .* u), x) + (B * v), xl); max(z, c)], rand(w, m))
     end
+end
+
+function cost_water3d(x, u)
+    op = [5.0, 5.0, 5.0]
+    eps = [0.5, 0.5, 0.5]
+    return maximum([abs.(x - op) - eps; 0])
+end
+
+function cost_test(x,u)
+    return 0
 end

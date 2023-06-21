@@ -1,4 +1,5 @@
 using HDF5
+import JSON
 
 #=
 (i) This code initializes an experiment in the form of an HDF5 file.
@@ -7,6 +8,7 @@ using HDF5
 
 #define experiment name, scenario code, method
 name = "exp_test.h5"
+
 scenario_code = "test"
 method = "exact"
 kernel = "null" #if not using a kernel method, leave as "null" (empty valued attributes aren't supported)
