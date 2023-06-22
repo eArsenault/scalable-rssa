@@ -66,5 +66,5 @@ function cost_water3d(x, u)
 end
 
 function cost_test(x,u)
-    return 0
+    return 1
 end

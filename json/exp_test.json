@@ -1,8 +1,7 @@
 {
     "name": "exp_test",
     "scenario_code": "test",
-    "kernel": "null",
-    "method": "exact",
+    "method": "test",
     "N": 10,
     "size_C": 10,
     "n": 1000,
