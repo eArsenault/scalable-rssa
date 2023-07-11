@@ -6,6 +6,8 @@ include("scenarios.jl")
 (iii) pars gives the setup for the data structures used, scenario_code defines the environment via scenarios.jl
 =#
 
+#Must finish approximate Bellman operator#
+
 function kernel(x1, x2)
     sgm = 1
     return exp(-sum(abs.(x1 - x2).^2)/(2*sgm^2))
@@ -36,11 +38,7 @@ function bellman_exact(J, scenario_code, pars)
     #get the environment function
     #exp_code tells us whether the environment also returns the noise distribution (to make expectation faster)
     (environment, exp_code) = get_environment(scenario_code)
-    if exp_code == 1
-        (w, pmf) = get_pmf(scenario_code)
-    else
-        (w, pmf) = (nothing, nothing)
-    end
+    (w, pmf) = get_pmf(scenario_code)
     
     #iterate over S (equivalently, indices of J)
     for xc in CartesianIndices(J)
@@ -97,11 +95,7 @@ function bellman_approximate(J, scenario_code, pars)
     #get the environment function
     #exp_code tells us whether the environment also returns the noise distribution (to make expectation faster)
     (environment, exp_code) = get_environment(scenario_code)
-    if exp_code == 0
-        (w, pmf) = get_pmf(scenario_code)
-    else
-        (w, pmf) = (nothing, nothing)
-    end
+    (w, pmf) = get_pmf(scenario_code)
     
     #draw samples from X
     #get dimS uniform values between 0 and 1, then scale appropriately - returns a dimS x n matrix

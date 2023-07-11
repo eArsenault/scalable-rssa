@@ -11,7 +11,6 @@ name = "exp_test.h5"
 
 scenario_code = "test"
 method = "exact"
-kernel = "null" #if not using a kernel method, leave as "null" (empty valued attributes aren't supported)
 
 #(all dummy values for now)!!
 #define horizon N, size of C as integers
