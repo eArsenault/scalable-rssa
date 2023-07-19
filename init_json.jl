@@ -25,9 +25,10 @@ function compute_J_init(obj)
     for xc in CartesianIndices(J)
         #convert index into corresponding x-value
         coords = Tuple(xc)
-        x = [X[i][coords[i]] for i=1:dimS]
+        chi = [X[i][coords[i]] for i=1:dimS]
+        z = chi[end]
 
-        J[xc] = cost(x,u)
+        J[xc] = max(cost(chi,u), z)
     end
 
     return J
@@ -72,7 +73,7 @@ function initialize(obj)
             s = s_vals[i]
     
             g = create_group(file, "s"*string(i))
-            g["J"*string(N)] = max.(J_init .- s, 0.0)
+            g["J"*string(N)] = max.(J_init .- s, 0.0) #take the max vs. z
             attributes(g)["value"] = s
         end
     

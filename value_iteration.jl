@@ -39,6 +39,7 @@ function value_iteration(obj)
 
     #choose which type of Bellman update to use, and identify relevant parameters
     if method == "exact"
+        println("Exact method chosen.")
         bellman = bellman_exact
         parameters = h5read("data/"*name, "init")
     else

@@ -37,7 +37,7 @@ function get_pmf(scenario_code)
 end
 
 function get_cost(scenario_code)
-    if scenario_code == "water2"
+    if scenario_code == "water2" || scenario_code == "water2_pmf"
         return cost_water2d
     elseif scenario_code == "water10"
         return cost_water10d
@@ -51,11 +51,11 @@ function environment_test(x, u, w=nothing, m=100)
 end
 
 #this ones a WIP
-function environment_2d(chi, u, w=[0.5], m=100)
+function environment_water2d(chi, u, w=[0.5], m=100)
     #relevant parameters for dynamics, cost
-    D = [0 0.5; 0 0] #reservoir 1 receives half the outflow from reservoir 2
+    D = [0 0.8; 0 0] #reservoir 1 receives half the outflow from reservoir 2
     r = [1; 1]
-    B = [1; 2]
+    B = [3; 3]
 
     #maximum cost in this config == 4.5
     xl = [10.0, 10.0]
@@ -69,7 +69,8 @@ function environment_2d(chi, u, w=[0.5], m=100)
     end
 end
 
-function cost_water2d(x, u)
+function cost_water2d(chi, u)
+    x = chi[1:2]
     op = [5.0, 5.0]
     eps = [0.5, 0.5]
     return maximum([abs.(x - op) - eps; 0])
