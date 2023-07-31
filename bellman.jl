@@ -140,6 +140,16 @@ function bellman_approximate(J, scenario_code, pars)
     sol = solve(prob, KrylovJL_CG())
     beta = sol.u
     
-    #store data
+    #use beta, kernel to compute J across the desired grid
+    for xc in CartesianIndices(J)
+        #convert index into corresponding x-value
+        coords = Tuple(xc)
+        x = [X[i][coords[i]] for i=1:dimS]
+        J[xc] = dot(beta, [kernel(x, x_mu[:,i]) for i=1:n])
+    end
+
+    #then use max and min to filter it to the interval \zed
+    J = min.(max.(J_kernel,Zl[1]), Zl[2])
+    return J
 
 end
