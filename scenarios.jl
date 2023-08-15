@@ -1,4 +1,4 @@
-using DelimitedFiles
+using DelimitedFiles, StatsBase
 
 #=
 (i) get_environment takes a scenario code and returns the corresponding environment function
@@ -20,19 +20,20 @@ function get_environment(scenario_code)
 end
 
 function get_pmf(scenario_code)
-    if scenario_code == "water2_pmf"
+    if (scenario_code == "water2_pmf" || scenario_code == "water2")
         #here, connect to a csv for the pmf
         #we want a vector of values
         src = "data/data_normalized.csv"
         d = readdlm(src, ',', Float64)
         #assumes realizations are first column, probabilities are second
         return (d[:,1], d[:,2])
-    elseif scenario_code == "water2"
-        src = "data/pmf_water2.csv"
-        #for this pmf, we need additional entries corresponding to the frequency of each realization
-        #i.e., an implicit embedding of the pmf
-        w = readdlm(src, ',', Float64)
-        return (w, nothing)
+    else 
+        ##LATER: implement a null noise variable, i.e., something as a backup
+
+        src = "data/data_normalized.csv"
+        d = readdlm(src, ',', Float64)
+        #assumes realizations are first column, probabilities are second
+        return (d[:,1], d[:,2])
     end
 end
 
@@ -51,7 +52,7 @@ function environment_test(x, u, w=nothing, m=100)
 end
 
 #this ones a WIP
-function environment_water2d(chi, u, w=[0.5], m=100)
+function environment_water2d(chi, u, w, p, m=100)
     #relevant parameters for dynamics, cost
     D = [0 0.8; 0 0] #reservoir 1 receives half the outflow from reservoir 2
     r = [1; 1]
@@ -65,7 +66,8 @@ function environment_water2d(chi, u, w=[0.5], m=100)
     if m == 0
         return map(v -> [min.(x + (D - I) * min.((r .* sqrt.(x) .* u), x) + (B * v), xl); max(z, c)], w)
     else
-        return map(v -> [min.(x + (D - I) * min.((r .* sqrt.(x) .* u), x) + (B * v), xl); max(z, c)], rand(w, m))
+        w_samp = sample(w, Weights(p), m)
+        return map(v -> [min.(x + (D - I) * min.((r .* sqrt.(x) .* u), x) + (B * v), xl); max(z, c)], w_samp)
     end
 end
 

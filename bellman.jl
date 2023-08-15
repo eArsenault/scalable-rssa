@@ -54,11 +54,11 @@ function bellman_exact(J, scenario_code, pars)
             #compute expected value using...
             if exp_code == 1
                 #sample average!
-                xp = environment(x,u,w,m)
+                xp = environment(x,u,w,pmf,m)
                 val = sum(map(v -> itp(v...), xp)) / length(xp)
             elseif exp_code == 0
                 #inner product with pmf!
-                xp = environment(x,u,w,0)
+                xp = environment(x,u,w,pmf,0)
                 val = dot(map(v -> itp(v...), xp), pmf)
             else 
                 #test values!
@@ -86,7 +86,7 @@ function bellman_approximate(J, scenario_code, pars)
     #generate a linear interpolator object on X using values in J
     nJ = size(J) #number of grid points along each dim
     X = [[collect(range(Xl[1,i], Xl[2,i], nJ[i])) for i=1:(dimS - 1)]; [collect(range(Zl[1], Zl[2], nJ[dimS]))]]
-    itp = interpolate(X, J, Gridded(Linear()));
+    itp = interpolate(tuple(X...), J, Gridded(Linear()));
 
     #generate memory-efficient representation of C, iterator for C
     C = [collect(range(Ul[1,i], Ul[2,i], subdimC)) for i=1:dimC] 
@@ -106,17 +106,13 @@ function bellman_approximate(J, scenario_code, pars)
     y = zeros(n)
     for i = 1:n
         x = x_mu[:,i]
-
-        #convert index into corresponding x-value
-        coords = Tuple(xc)
-        x = [X[i][coords[i]] for i=1:dimS]
         min_u = Zl[2] #Zl[2] = \bar{c}, maximum cost value
 
         #iterate over C
         for ind_C in inds_C
             u = [C[i][ind_C[i]] for i=1:dimC]
 
-            xp = environment(x,u,w)
+            xp = environment(x,u,w,pmf,m)
             val = sum(map(v -> itp(v...), xp)) / length(xp) #what is our J function now?
 
             #keep a running minimum over C
@@ -134,7 +130,7 @@ function bellman_approximate(J, scenario_code, pars)
         end
     end
 
-    #solve the regression problem
+    #solve the regression problem - John suggest CG
     lambda = 1/cbrt(n)
     prob = LinearProblem(K + lambda * n * I, y)
     sol = solve(prob, KrylovJL_CG())
@@ -149,7 +145,8 @@ function bellman_approximate(J, scenario_code, pars)
     end
 
     #then use max and min to filter it to the interval \zed
-    J = min.(max.(J_kernel,Zl[1]), Zl[2])
+    #print(Zl, maximum(J), minimum(J))
+    J = min.(max.(J,Zl[1]), Zl[2])
     return J
 
 end

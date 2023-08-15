@@ -53,7 +53,7 @@ function initialize(obj)
     #define initial value function
     #J_init should have dimension = dimX + 1
     J_init = compute_J_init(obj) 
-    
+
     #open the file in write-mode allows us to overwrite if the file exists
     h5open("data/"*name, "w") do file
         #create group and write in initial data
@@ -84,6 +84,9 @@ function initialize(obj)
         attributes(file)["N"] = N
     end
     
-    println("Experiment "*name*" initialized.") 
+    println("Experiment "*name*" initialized.")
+    println("n: ",obj["n"]) 
+    println("m: ",obj["m"])
+    println("s_num ",obj["s_num"])
 end
 

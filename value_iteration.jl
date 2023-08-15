@@ -1,6 +1,8 @@
 using HDF5
 include("bellman.jl")
 
+#### ISSUE: progress is not updated within the hdf5 file, i.e., cannot restart easily after stopping
+
 #=
 (i) This code runs the value iteration algorithm.
 (ii) Data is loaded and stored  in a corresponding HDF5 file, generated in init_experiment.jl.
@@ -41,6 +43,10 @@ function value_iteration(obj)
     if method == "exact"
         println("Exact method chosen.")
         bellman = bellman_exact
+        parameters = h5read("data/"*name, "init")
+    elseif method == "approx"
+        println("Approximate method chosen.")
+        bellman = bellman_approximate
         parameters = h5read("data/"*name, "init")
     else
         bellman = bellman_test
